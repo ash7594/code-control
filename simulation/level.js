@@ -45,8 +45,19 @@ function SwarmTraining(char, swarm, jsonPath, finishCb) {
         return score;
     }
 
+	function restartSwarm() {
+		self.turn = 0;
+		spawned = [];
+		self.restart();
+	}
+
     function gameOver() {
-        setImmediate(finishCb, null, { score: getScore(), replay: self.replay, map: JSON.stringify(self.def) });
+		if (this.defendDone)
+			setImmediate(finishCb, null, { score: getScore(), replay: [self.defendReplay, self.attackReplay], map: JSON.stringify(self.def) });
+		else {
+			this.defendDone = true;
+			restartSwarm();
+		}
     }
     this.gameOver = gameOver;
 
@@ -56,9 +67,19 @@ function SwarmTraining(char, swarm, jsonPath, finishCb) {
     }
     this.init = init;
 
+	function attackInit() {
+        pChar = new Controllable(P_B, self.getSpawn(), self, char.getHealth(), char.getAttack())
+        spawned.push(new Controllable(P_A, self.getSpawn(), self, swarm.getHealth(), swarm.getAttack()));
+	}
+	this.attackInit = attackInit;
+
     function nextIter() {
         if(self.turn % 5 == 0) {
-            spawned.push(new Controllable(P_B, self.getSpawn(), self, swarm.getHealth(), swarm.getAttack()));
+			if (self.defendDone)
+				spawned.push(new Controllable(P_A, self.getSpawn(), self, swarm.getHealth(), swarm.getAttack()));
+			else
+				spawned.push(new Controllable(P_B, self.getSpawn(), self, swarm.getHealth(), swarm.getAttack()));
+
         }
     }
     this.nextIter = nextIter;
@@ -84,11 +105,11 @@ function BattleLevel(charA, charB, jsonPath, finishCb) {
 
     function gameOver() {
         if(bP.dead) {
-            setImmediate(finishCb, null, { winner: charA._id, replay: self.replay, map: JSON.stringify(self.def) });
+            setImmediate(finishCb, null, { winner: charA._id, replay: [self.defendReplay, self.attackReplay], map: JSON.stringify(self.def) });
         } else if(aP.dead) {
-            setImmediate(finishCb, null, { winner: charB._id, replay: self.replay, map: JSON.stringify(self.def) });
+            setImmediate(finishCb, null, { winner: charB._id, replay: [self.defendReplay, self.attackReplay], map: JSON.stringify(self.def) });
         } else {
-            setImmediate(finishCb, null, { winner: null, replay: self.replay, map: JSON.stringify(self.def) });
+            setImmediate(finishCb, null, { winner: null, replay: [self.defendReplay, self.attackReplay], map: JSON.stringify(self.def) });
         }
     }
     this.gameOver = gameOver;
@@ -119,7 +140,7 @@ function AbstractLevel(chars, jsonPath, finishCb) {
     var entities = {},
     updateList = new LinkList, moveDel = [],
     self = this,
-    msg = '', runner;
+    msg = '', runner, defendDone = false;
 
     this.players = chars.map(function(x) {
         return new Player(x._id);
@@ -127,15 +148,41 @@ function AbstractLevel(chars, jsonPath, finishCb) {
     this.grid = null;
     this.tSet = {};
     this.turn = 0;
-    this.replay = [];
+    this.defendReplay = [];
+	this.attackReplay = [];
+	this.defendDone = defendDone;
 
+	function restart() {
+		entities = {};
+		updateList = new LinkList;
+		chars.reverse();
+		self.players = chars.map(function(x) {
+			return new Player(x._id);
+		});
+		self.grid = null;
+		self.tSet = {};
+		self.turn = 0;
+		fReadCback(self.def);
+
+		// Apparantely, Runner can't be re-initialized
+		// self.run();
+		// runner.reverseRunnerStatus();
+	}
+	this.restart = restart;
+
+	// The way things are done right now, chars.length == 2 always. 
     function run() {
         var code = chars.map(function(x) {
             return x.code;  // x.code -> [defend, attack]
         });
+
+		// 0 - defend; 1 - attack;
+		// Modify the order of code being sent here.
+
         // Don't pass ./api.js here. Let defend_api and attack_api
         // be self contained
-        runner = new Runner(['./defend_api', './attack_api'], code, loadMap, errBack, 1000);
+		
+		runner = new Runner(['./defend_api', './attack_api'], code, loadMap, errBack, 1000);
     }
     this.run = run;
 
@@ -161,6 +208,7 @@ function AbstractLevel(chars, jsonPath, finishCb) {
         });
     }
     this.damageEvent = damageEvent;
+
     function moveEvent(idx, nPos, oPos) {
         var delPos = {
             i: nPos.i - oPos.i,
@@ -176,7 +224,13 @@ function AbstractLevel(chars, jsonPath, finishCb) {
     function addEvent(type, data) {
         var event = {};
         event[type] = data;
-        self.replay.push(event);
+
+		if(!self.defendDone) {
+			self.defendReplay.push(event);
+		}
+		else {
+			self.attackReplay.push(event);
+		}
     }
 
     function errBack(i, e) {
@@ -223,6 +277,9 @@ function AbstractLevel(chars, jsonPath, finishCb) {
     }
 
     function loadMap() {
+		if (defendDone)
+			return;
+
         if(++loadMap.count < chars.length) {
             return;
         }
@@ -239,8 +296,16 @@ function AbstractLevel(chars, jsonPath, finishCb) {
                 self.tSet[key] = new Tile(self.def.tiledata[key], key);
             }
         }
+
+		// Copy this line
         self.grid.loadTilemap(self.def.data, self.tSet);
-        self.init();
+
+		if (self.defendDone) {
+			self.attackInit();
+		} else {
+			self.init();
+		}
+
         act(null);
     }
 

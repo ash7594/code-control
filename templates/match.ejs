@@ -31,8 +31,10 @@
         <% } %>
     <% } %>
     </div>
+
+	<!-- Defend Canvas Below -->
     <div id = "replay-frame">
-        <h2> Replay </h2>
+        <h2> Defend Replay </h2>
         <div id = "misc-info">
             Player 1 - BLUE<br>
             Player 2 - RED
@@ -45,10 +47,29 @@
         <button class = "btn sp-but" id = "pause-button">pause</button>
         <button class = "btn sp-but" id = "play-button">play</button>
         <button class = "btn sp-but" id = "reset-button">reset</button>
-        <a id = "dload-link" style = "margin-left:5em;"><b>Download</b></a>
+        <!-- <a id = "dload-link" style = "margin-left:5em;"><b>Download</b></a> -->
+    </div>
+
+	<!-- Attack Canvas Below -->
+    <div id = "replay-frame-attack">
+        <h2> Attack Replay </h2>
+        <div id = "misc-info-attack">
+            Player 1 - RED<br>
+            Player 2 - BLUE
+        </div>
+        <canvas id = "render-canvas-attack" width = 800 height = 800></canvas>
+    </div>
+    <div id = "replay-buttons-attack">
+        <button class = "btn sp-but" id = "next-button-attack">next</button>
+        <button class = "btn sp-but" id = "prev-button-attack">prev</button>
+        <button class = "btn sp-but" id = "pause-button-attack">pause</button>
+        <button class = "btn sp-but" id = "play-button-attack">play</button>
+        <button class = "btn sp-but" id = "reset-button-attack">reset</button>
+        <!-- <a id = "dload-link" style = "margin-left:5em;"><b>Download</b></a> -->
     </div>
     <script id = "map-json" type = "application/json"> <%- map %> </script>
-    <script id = "replay-json" type = "application/json"> <%- JSON.stringify(match.replay) %> </script>
+    <script id = "replay-json-defend" type = "application/json"> <%- JSON.stringify(match.replay[0]) %> </script>
+    <script id = "replay-json-attack" type = "application/json"> <%- JSON.stringify(match.replay[1]) %> </script>
     <script src = "/render.js"></script>
 </div></body>
 </html>

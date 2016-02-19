@@ -153,9 +153,12 @@ function doTrain(req, res) {
 		if(!isValidMap(req.body.map)) {
             return res.redirect('/404');
         }
+		// jsonPath Totally unnecessary?
         jsonPath = path.join('./simulation', req.body.map);
+		// console.log(jsonPath);
         if(req.body.level == 'swarm') {
             var SwarmLevel = require('./simulation/level').SwarmTraining;
+            // new SwarmLevel(swarmChar, char, jsonPath, simDoneCb);
             new SwarmLevel(char, swarmChar, jsonPath, simDoneCb);
         } else {
             return res.redirect('/404');
@@ -183,7 +186,7 @@ function doTrain(req, res) {
                 if(err) {
                     throw err;
                 }
-                res.redirect('/m/' + m._id);
+				res.redirect('/m/' + m._id);
             });
         });
     }
@@ -367,6 +370,7 @@ function unAuth(res, req) {
 function matchPage(req, res) {
     var match;
     function fileLoaded() {
+		// This is the json being sent to `Match.ejs`.
         res.render('match', { map: match.map, user: req.user, match: match });
     }
     function foundMatch(err, m) {
@@ -379,6 +383,7 @@ function matchPage(req, res) {
         }
 		setImmediate(fileLoaded);
     }
+	// console.log(req.params); // Has only the mid field
     models.Match.findById(req.params.mid).
         populate('contenders').
         exec(foundMatch);

@@ -21,7 +21,8 @@ TimeoutException.prototype.toString = function() {
 
 const INIT = 0, DONE = 1, RUN = 2, KILLED = 3;
 function Runner(api, code, cBack, errBack, timeLimit) {
-    var proc = [], cback = [], i;
+    var proc = [], cback = [], i, offset = 0;
+	this.code = code;
 
     function timeoutKill(i) {
         return function() {
@@ -42,15 +43,16 @@ function Runner(api, code, cBack, errBack, timeLimit) {
         return function(m) {
             var type = m.type, data = m.data;
             if(type == 'init_done') {
-                console.log("In runner MSG Handler");
+                console.log("In runner MSG Handler " + i);
                 clearTimeout(proc[i].timeout);
                 proc[i].state = DONE;
                 setImmediate(cBack);
             } else if(type == 'result') {
                 clearTimeout(proc[i].timeout);
                 proc[i].callback(true, data);
-                proc[i].state = DONE;
+                proc[i].state = DONE;        
             } else if(type == 'error') {
+                console.log("ERROR "+m);
                 if(proc[i].state == INIT) {
                     setImmediate(errBack, i, new Error(data))
                 } else if(proc[i].state == RUN) {
@@ -72,7 +74,24 @@ function Runner(api, code, cBack, errBack, timeLimit) {
         }
     }
 
-    for(i = 0; i < code.length; i++) {
+	function reverseRunnerStatus() {
+		/*
+			for (var i = 0; i < this.code.length; i++) {
+				proc[i].state = INIT;
+				proc[i].timeout = setTimeout(timeoutKill(i), timeLimit);
+				// console.log(code[(i + 1) % 2][i]);
+				
+				proc[i].p.send({ type: 'init_code', data: code[(i + 1) % 2][i] });
+				proc[i].p.stdout.on('data', appendToLog(i));
+			}
+			console.log("Done reversing");
+		*/
+
+		offset = 2;
+	}
+	// this.reverseRunnerStatus = reverseRunnerStatus;
+
+    for(var i = 0; i < code.length; i++) {
         var err = linter.process(code[i][i], require(api[i]), [req_func[i]]);
         if(err.length > 0) {
             setImmediate(errBack, i, new Error('Code failed to lint ' + err[0].text));
@@ -90,15 +109,42 @@ function Runner(api, code, cBack, errBack, timeLimit) {
         proc[i].p.stdout.on('data', appendToLog(i));
     }
 
-    function runCode(i, input, cback, f_name, timeLimit) {
+
+    // Uncommenting the below code will cause the error.
+	/*
+        for(var i = 0; i < code.length; i++) {
+    		console.log(code[(i + 1) % 2][i]);
+    		console.log(req_func[i]);
+            var err = linter.process(code[(i + 1) % 2][i], require(api[i]), [req_func[i]]);
+            if(err.length > 0) {
+                setImmediate(errBack, i + 2, new Error('Code failed to lint ' + err[0].text));
+                return;
+            }
+            proc[i + 2] = {};
+            proc[i + 2].q = [];
+            proc[i + 2].log = '';
+            proc[i + 2].p = child_proc.fork('./simulation/sandbox.js', [], {silent: true});
+            proc[i + 2].p.on('message', messageHandler(i + 2));
+            proc[i + 2].p.send({ type: 'init_context', data: api[i] });
+            proc[i + 2].state = INIT;
+            proc[i + 2].timeout = setTimeout(timeoutKill(i + 2), timeLimit);
+            proc[i + 2].p.send({ type: 'init_code', data: code[(i + 1) % 2][i] });
+            proc[i + 2].p.stdout.on('data', appendToLog(i + 2));
+        }
+    */
+	
+	function runCode(i, input, cback, f_name, timeLimit) {
+        
         if(proc[i].state != DONE) {
             proc[i].q.push(arguments);
         }
         proc[i].state = RUN;
         proc[i].callback = cback;
         proc[i].p.send({ type: 'load_param', data: input });
-        proc[i].timeout = setTimeout(timeoutKill(i), timeLimit);
-        proc[i].p.send({ type: 'run_code', data: f_name[i] });
+		proc[i].timeout = setTimeout(timeoutKill(i), timeLimit);
+		proc[i].p.send({ type: 'run_code', data: f_name[i] });
+        
+        
     }
     this.runCode = runCode;
 
