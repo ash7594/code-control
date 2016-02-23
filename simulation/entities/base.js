@@ -1,6 +1,7 @@
 var stuff = require('../stuff'),
-Direction = stuff.Direction,
-Point = stuff.Point;
+	Direction = stuff.Direction,
+	Side = stuff.Side,
+	Point = stuff.Point;
 var globalEntIdx = 0;
 
 function ControlException(reason) {
@@ -11,11 +12,12 @@ ControlException.prototype.toString = function() {
     return "ControlException: {Invalid Return} " + this.reason;
 }
 
-function Controllable(team, p, level, health, attack_damage) {
+function Controllable(team, p, level, health, attack_damage, side) {
     var self = this;
     this.type = 'warrior';
     this.health = health;
     this.team = team;
+	this.side = side;
     this.dead = false;
     this.pos = new Point(p.i, p.j);
     if(!level.grid.isValid(self.pos)) {
@@ -66,6 +68,11 @@ function Controllable(team, p, level, health, attack_damage) {
         } else if(action == 'rest') {
             // PASS
         } else if(action == 'attack') {
+
+			// No event changes necessary
+			if (self.side === Side.Defend)
+				return;
+
             var attackPos = moveSafe(self.pos, result);
             if(!level.grid.isValid(attackPos)) {
                 warnLog('empty attack');
