@@ -101,8 +101,8 @@ function BattleLevel(charA, charB, myMap, round, finishCb) {
     this.gameOver = gameOver;
 
     function init() {
-        aP = new Controllable(0, self.getSpawn(), self, charA.getHealth(), charA.getAttack());
-        bP = new Controllable(1, self.getSpawn(), self, charB.getHealth(), charB.getAttack());
+        aP = new Controllable(0, self.getSpawn(), self, charA.getHealth(), charA.getAttack(), round);
+        bP = new Controllable(1, self.getSpawn(), self, charB.getHealth(), charB.getAttack(), (round + 1) % 2);
     }
     this.init = init;
     
