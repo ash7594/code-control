@@ -12,12 +12,12 @@ ControlException.prototype.toString = function() {
     return "ControlException: {Invalid Return} " + this.reason;
 }
 
-function Controllable(team, p, level, health, attack_damage, side) {
+function Controllable(team, p, level, health, attack_damage, round) {
     var self = this;
     this.type = 'warrior';
     this.health = health;
     this.team = team;
-	this.side = side;
+	this.round = round;
     this.dead = false;
     this.pos = new Point(p.i, p.j);
     if(!level.grid.isValid(self.pos)) {
@@ -70,7 +70,7 @@ function Controllable(team, p, level, health, attack_damage, side) {
         } else if(action == 'attack') {
 
 			// No event changes necessary
-			if (self.side === Side.Defend)
+			if (self.round == Side.Defend)
 				return;
 
             var attackPos = moveSafe(self.pos, result);
