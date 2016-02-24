@@ -116,6 +116,7 @@ function SwarmTraining(char, swarm, myMap, round, finishCb) {
             if (self.turn % 1 == 0)
                 surroundPos(spawned[0].pos);
         */
+        // surroundPos(pChar.pos);
     }
     this.nextIter = nextIter;
 
@@ -161,7 +162,7 @@ function SwarmTraining(char, swarm, myMap, round, finishCb) {
     // For debugging purposes
     function surroundPos(pos) {
         var center = pos;
-        var radius = EXPLOSION_DEFAULT.radius + 1;
+        var radius = 1;
         var topLeft = new Point(center.i - radius, center.j - radius);
 
         for (var i = 0; i <= 2 * radius; i++) {
@@ -176,6 +177,7 @@ function SwarmTraining(char, swarm, myMap, round, finishCb) {
 
                 var bomb = new Bomb(round, BOMB_DEFAULT.damage, -1, 0, point);
                 self.grid.put(point, bomb);
+                self.addBomb(bomb);
                 self.addBombEvent(point, bomb);
             }
         }
@@ -248,6 +250,11 @@ function AbstractLevel(chars, myMap, round, finishCb) {
     this.tSet = {};
     this.turn = 0;
     this.replay = [];
+
+    function printBombs() {
+        console.log(bombs);
+    }
+    this.printBombs = printBombs;
 
     function run() {
         var code = chars.map(function(x) {

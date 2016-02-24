@@ -76,7 +76,7 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
         count: this.explosionInfo.capacity,
         radius: this.explosionInfo.radius
     };
-    	
+
     function explosion(center, radius, damage) {
         var obj = level.grid.get(center);
         if (obj instanceof Controllable)

@@ -260,10 +260,10 @@ function getBombPos(bomb) {
 // Will work if and only if there are only two enemies
 function getEnemy(params) {
     var entities = getEntArray(params);
-    var enemyEntity = {};
+    var enemyEntity = { };
 
     entities.forEach(function(ent) {
-        if (ent.idx != params.self.idx)
+        if (ent.side != params.self.side)
             enemyEntity = ent;
     });
 
@@ -317,3 +317,8 @@ module.exports.getAt = getAt;
 module.exports.isValid = isValid;
 module.exports.hasPlacedBomb = hasPlacedBomb;
 module.exports.Side = Side;
+
+module.exports.getBombArray = getBombArray;
+module.exports.getFriendlyArray = getFriendlyArray;
+module.exports.getEnemy = getEnemy;
+module.exports.getEnemyArray = getEnemyArray;

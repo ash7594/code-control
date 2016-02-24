@@ -63,6 +63,51 @@ function plantBomb(params){
     console.log(Point.i + " "+ Point.j);
 }
 
+function getEnemy(params) {
+    var entities = getEntArray(params);
+    var enemyEntity = {};
+
+    entities.forEach(function(ent) {
+        if (ent.idx != params.self.idx)
+            enemyEntity = ent;
+    });
+
+    return enemyEntity;
+}
+
+// If multiple enemies
+function getEnemyArray(params) {
+    var entities = getEntArray(params);
+    var enemies = [];
+
+    entities.forEach(function(ent) {
+        if (ent.side != params.self.side) {
+            enemies.push(ent);
+        }
+    });
+
+    return enemies;
+}
+
+// For friendlies
+function getFriendlyArray(params) {
+    var entities = getEntArray(params);
+    var friendlies = [];
+
+    friendlies.forEach(function(ent) {
+        if (ent.side == params.self.side) {
+            enemies.push(ent);
+        }
+    });
+
+    return friendlies;
+}
+
+// Make it a readble property
+function getBombArray(params) {
+    return params.bomb;
+}
+
 module.exports.Point = Point;
 module.exports.getMove = stuff.getMove;
 module.exports.Direction = Direction;
@@ -75,3 +120,8 @@ module.exports.getAt = getAt;
 module.exports.isValid = isValid;
 module.exports.plantBomb = plantBomb;
 module.exports.hasPlacedBomb = hasPlacedBomb;
+
+module.exports.getBombArray = getBombArray;
+module.exports.getFriendlyArray = getFriendlyArray;
+module.exports.getEnemy = getEnemy;
+module.exports.getEnemyArray = getEnemyArray;
