@@ -70,7 +70,7 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
     this.placedBomb = false;
 
     this.explosionInfo = params.explosion;
-    this.explosionCapacity = this.explosiveData.capacity;
+    this.explosionCapacity = this.explosionInfo.capacity;
     this.explosionData = {
         damage: this.explosionInfo.damage,
         count: this.explosionInfo.capacity,
