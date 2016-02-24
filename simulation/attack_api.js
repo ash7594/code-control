@@ -257,10 +257,10 @@ function getBombPos(bomb) {
 }
 
 // ----------------------------------------------------------------------Group Functions
-// Will work if and only if there are only two enemies
+// Will work if and only if there's one enemy
 function getEnemy(params) {
     var entities = getEntArray(params);
-    var enemyEntity = { };
+    var enemyEntity;
 
     entities.forEach(function(ent) {
         if (ent.side != params.self.side)

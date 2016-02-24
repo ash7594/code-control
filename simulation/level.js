@@ -349,6 +349,11 @@ function AbstractLevel(chars, myMap, round, finishCb) {
     function updateEntCallback(ent) {
         return function(x, dat) {
             try {
+                if (!ent) {
+                    console.log('fck me');
+                    console.log(x);
+                    console.log(dat);
+                }
                 if(!x) {
                     throw dat;
                 }
