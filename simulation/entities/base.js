@@ -52,8 +52,14 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
         return nextPos;
     }
 
-	this.bombInfo = params.bomb;
-	this.side = round;
+    this.bombInfo = params.bomb;
+    this.bombData = {
+        damage: this.bombInfo.damage,
+        count: this.bombInfo.capacity
+    };
+
+    this.bombCapacity = this.bombInfo.capacity;
+    this.side = round;
     
 	this.itemsAtPos = {
 		arr: [],
@@ -61,8 +67,15 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
 	};
 
     this.bombAtPos = false;
+    this.placedBomb = false;
 
-    this.explosionData = params.explosion;
+    this.explosionInfo = params.explosion;
+    this.explosionCapacity = this.explosiveData.capacity;
+    this.explosionData = {
+        damage: this.explosionInfo.damage,
+        count: this.explosionInfo.capacity,
+        radius: this.explosionInfo.radius
+    };
     	
     function explosion(center, radius, damage) {
         var obj = level.grid.get(center);
@@ -121,6 +134,7 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
         if (self.bombAtPos) {
             bomb = new Bomb(self.side, self.bombInfo.damage, self.bombInfo.lifetime, self.bombInfo.radius, self.pos);
             level.grid.put(self.pos, bomb);
+            level.addBomb(bomb);
             self.bombAtPos = false;
             // Bomb add event
             // level.addBombEvent(self.pos, bomb);
@@ -173,6 +187,8 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
             eventData.explodePos = nextPos;
             eventData.explodeBomb = occ;
 
+            level.removeBomb(occ);
+
             eventData.damage = {};
 
             self.health -= occ.damage;
@@ -203,6 +219,7 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
 
         level.grid.put(nextPos, self);
         self.pos = nextPos;
+        self.placedBomb = self.bombAtPos;
 
         /*
             if (didPlaceBomb) {
@@ -289,6 +306,7 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
             if (obj.type == 'Player Item' && obj.kind == 'bomb') {
                 toRemove.push(obj.pos);
                 level.grid.put(obj.pos, 0);
+                level.removeBomb(obj);
             }
         }
 
@@ -391,7 +409,10 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
                 return;
 
             self.bombInfo.capacity -= 1;
+            self.bombCapacity = self.bombInfo.capacity;
+            self.bombData.count = self.bombCapacity;
             self.bombAtPos = true;
+            self.placedBomb = self.bombAtPos;
 
         } else if (action == 'explosive ring') {
             if (self.side == Side.Defend)
@@ -402,37 +423,40 @@ function Controllable(team, p, level, health, attack_damage, round, params) {
                 return;
             }
 
-            if (self.explosionData.capacity <= 0)
+            if (self.explosionInfo.capacity <= 0)
                 return;
 
-            self.explosionData.capacity--;
+            self.explosionInfo.capacity--;
+            self.explosionCapacity = self.explosionInfo.capacity;
+            self.explosionData.count = self.explosionInfo.capacity;
 
             var center = self.pos;
             if ('pos' in result) {
                 var distance = getRadialDistance(result.pos, center);
-                if (distance <= self.explosionData.throwDistance)
+                if (distance <= self.explosionInfo.throwDistance)
                     center = result.pos;
             }
 
             var explosiveData = {
                 center: center,
-                radius: self.explosionData.radius,
+                radius: self.explosionInfo.radius,
                 side: self.side,
                 type: result.type,
                 killTrap: true
             };
 
             if (result.type == 'constant')
-                explosiveData.damage = self.explosionData.damage;
+                explosiveData.damage = self.explosionInfo.damage;
             else {
-                explosiveData.minDamage = self.explosionData.minDamage;
-                explosiveData.maxDamage = self.explosionData.maxDamage;
+                explosiveData.minDamage = self.explosionInfo.minDamage;
+                explosiveData.maxDamage = self.explosionInfo.maxDamage;
             }
             updateExplosiveRing(result, explosiveData);
 
         } else {
             throw new ControlException('`' + action + '` is not a valid action');
         }
+        self.placedBomb = self.bombAtPos;
     }
     this.update = update;
 

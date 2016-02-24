@@ -272,7 +272,6 @@ function Grid(row, col) {
     }
     this.getRepr = getRepr;
 
-
 	/*
 		function plantBomb(pos, item) {
 			if (!isValid(pos)) {

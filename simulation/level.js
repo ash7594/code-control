@@ -100,7 +100,7 @@ function SwarmTraining(char, swarm, myMap, round, finishCb) {
 
     function init() {
         pChar = new Controllable(P_A, self.getSpawn(), self, char.getHealth(), char.getAttack(), round, getDefaultParams());
-        spawned.push(new Controllable(P_B, self.getSpawn(), self, swarm.getHealth(), swarm.getAttack(), (round + 1) % 2, getDefaultParams()));
+        spawned.push(new Controllable(P_B, getNextPos(pChar.pos), self, swarm.getHealth(), swarm.getAttack(), (round + 1) % 2, getDefaultParams()));
 
         // surroundPos(pChar.pos);
         // surroundPos(spawned[0].pos);
@@ -223,11 +223,23 @@ function BattleLevel(charA, charB, myMap, round, finishCb) {
 
 util.inherits(BattleLevel, AbstractLevel);
 
+// arr will have a 'pos' property
+function getIndexOfPointArray(arr, pos) {
+    for (var i = 0; i < arr.length; i++) {
+        if (arr[i].pos.i == pos.i && arr[i].pos.j == pos.j)
+            return i;
+    }
+
+    return -1;
+}
+
 function AbstractLevel(chars, myMap, round, finishCb) {
     var entities = {},
     updateList = new LinkList, moveDel = [],
     self = this,
     msg = '', runner;
+
+    var bombs = [];
 
     this.players = chars.map(function(x) {
         return new Player(x._id);
@@ -249,6 +261,17 @@ function AbstractLevel(chars, myMap, round, finishCb) {
         addEvent('spawn', ent);
     }
     this.spawnEvent = spawnEvent;
+
+    function addBomb(bomb) {
+        bombs.push(bomb);
+    }
+    this.addBomb = addBomb;
+
+    function removeBomb(bomb) {
+        var index = getIndexOfPointArray(bombs, bomb.pos);
+        bombs.splice(index, 1);
+    }
+    this.removeBomb = removeBomb;
 
     function addBombEvent(pos, bomb) {
         addEvent('bombAdd', pos);
@@ -344,7 +367,8 @@ function AbstractLevel(chars, myMap, round, finishCb) {
             entities: entities,
             grid: self.grid.getRepr(), 
             turn: self.turn,
-            self: ent
+            self: ent,
+            bombs: bombs
         };
     }
 

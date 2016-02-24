@@ -1,7 +1,8 @@
 var stuff = require('./stuff'),
 Point = stuff.Point,
 Tile = stuff.Tile,
-Direction = stuff.Direction;
+Direction = stuff.Direction,
+Side = stuff.Side;
 
 function isValid(params, p) {
     return p.i >= 0 && p.i < params.grid.row && p.j >= 0 && p.j < params.grid.col;
@@ -69,3 +70,4 @@ module.exports.getType = getType;
 module.exports.getAt = getAt;
 module.exports.isValid = isValid;
 module.exports.plantBomb = plantBomb
+module.exports.Side = Side;
