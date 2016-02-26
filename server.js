@@ -126,6 +126,9 @@ function loadData() {
             if(file.length > 0) {
                 fs.readFile(file.pop(), doneFRead(file, val, key));
             } else {
+				var errs = linter.versusProcess(swarmChar.code, [require('./simulation/api'), require('./simulation/defend_api'), require('./simulation/attack_api')], ['defend', 'attack']);
+				swarmChar.code = linter.getAdCode();
+				swarmChar.codeChanged = true;
                 setImmediate(startServer);
             }
         }
@@ -167,15 +170,10 @@ function doTrain(req, res) {
 		myMap = gen_map;
         if(req.body.level == 'swarm') {
             SwarmLevel = require('./simulation/level').SwarmTraining;
-
-
-			if (!swarmChar.codeChanged) {
-				var errs = linter.versusProcess(swarmChar.code, [require('./simulation/api'), require('./simulation/defend_api'), require('./simulation/attack_api')], ['defend', 'attack']);
-				swarmChar.code = linter.adCode;
-				swarmChar.codeChanged = true;
-			}
-
-            new SwarmLevel(char, swarmChar, myMap, DEFEND, sim1DoneCb);
+			if (swarmChar.codeChanged)
+				new SwarmLevel(char, swarmChar, myMap, DEFEND, sim1DoneCb);
+			else
+				console.log('What the hecking wallly');
         } else {
             return res.redirect('/404');
         }
@@ -677,7 +675,7 @@ function saveChar(req, res) {
             return res.redirect('/login_failed');
         }
         errs = linter.versusProcess(req.body.code, [require('./simulation/api'), require('./simulation/defend_api'), require('./simulation/attack_api')], ['defend', 'attack']);
-		char.code = linter.adCode;
+		char.code = linter.getAdCode();
         char.passed = (errs.length == 0);
 		if (char.passed)
         	char.save(doneSave);

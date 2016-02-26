@@ -25,7 +25,7 @@ function attack(params) {
 			var type = getType(obj);
 
 			// Check if the entity detected isn't us
-			if (type == 'warrior' && obj.idx != self.idx) {
+			if (type == 'warrior' && obj.side != self.side) {
 
 				// Explode here
 				return {

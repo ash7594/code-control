@@ -254,7 +254,12 @@ function process(code, globals, req_func) {
     }
     return warn;
 }
+
+function getAdCode() {
+	return JSON.parse(JSON.stringify(attack_and_defend_code));
+}
 module.exports.process = process;
 module.exports.versusProcess = versusProcess;
 module.exports.getFunctionCode = getCode;
-module.exports.adCode = attack_and_defend_code
+module.exports.adCode = JSON.parse(JSON.stringify(attack_and_defend_code));
+module.exports.getAdCode = getAdCode;
